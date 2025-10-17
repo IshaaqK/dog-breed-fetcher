@@ -20,11 +20,11 @@ public interface BreedFetcher {
     class BreedNotFoundException extends Exception {
         public BreedNotFoundException(String breed) {
 
-            super("Breed not found: " + breed);
+            super(breed);
         }
 
         public BreedNotFoundException(String breed, Throwable cause) {
-            super("Breed not found: " + breed, cause);
+            super(breed, cause);
         }
     }
 }
