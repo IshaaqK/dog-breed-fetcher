@@ -7,7 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * BreedFetcher implementation that relies on the dog.ceo API.
@@ -24,12 +25,36 @@ public class DogApiBreedFetcher implements BreedFetcher {
      * @throws BreedNotFoundException if the breed does not exist (or if the API call fails for any reason)
      */
     @Override
-    public List<String> getSubBreeds(String breed) {
-        // TODO Task 1: Complete this method based on its provided documentation
-        //      and the documentation for the dog.ceo API. You may find it helpful
-        //      to refer to the examples of using OkHttpClient from the last lab,
-        //      as well as the code for parsing JSON responses.
-        // return statement included so that the starter code can compile and run.
-        return new ArrayList<>();
+    public List<String> getSubBreeds(String breed) throws BreedNotFoundException {
+        String url = "https://dog.ceo/api/breed/" + breed.toLowerCase() + "/list";
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+
+            if (!response.isSuccessful()) {
+                throw new BreedNotFoundException("API request failed with status " + response.code());
+            }
+
+            JSONObject json = new JSONObject(response.body().string());
+            String status = json.getString("status");
+
+            if (!status.equals("success")) {
+                throw new BreedNotFoundException("Breed not found: " + breed);
+            }
+
+            JSONArray subBreedArray = json.getJSONArray("message");
+            List<String> subBreeds = new ArrayList<>();
+
+            for (int i = 0; i < subBreedArray.length(); i++) {
+                subBreeds.add(subBreedArray.getString(i));
+            }
+
+            return subBreeds;
+        } catch (IOException e) {
+            throw new BreedNotFoundException("Error fetching data for breed: " + breed);
+        }
     }
 }
